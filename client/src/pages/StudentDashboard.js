@@ -29,7 +29,7 @@ export default function StudentDashboard() {
 
   return (
     <div>
-      <h2>Available Activities</h2>
+      <h2 className="section-title">Available Activities</h2>
       <NotificationsPanel items={notifications} />
       {activities.length===0 && <p>No active activities</p>}
       {activities.map(a => <ActivityCard key={a._id} activity={a} onApply={() => handleApply(a._id)} />)}
