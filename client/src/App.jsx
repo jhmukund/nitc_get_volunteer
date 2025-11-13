@@ -1,35 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import Login from './pages/Login';
+import StudentDashboard from './pages/StudentDashboard';
+import TeacherDashboard from './pages/TeacherDashboard';
+import { getUser, getToken, logout } from './auth';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [user, setUser] = useState(getUser());
+  const [token, setToken] = useState(getToken());
+
+  const onLogin = (u, t) => { setUser(u); setToken(t); };
+
+  const handleLogout = () => { logout(); setUser(null); setToken(null); window.location.reload(); };
+
+  if (!user) return <Login onLogin={onLogin} />;
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="container">
+      <header className="header hoverable">
+        <h1>Volunteer Management</h1>
+        <div className="header-right">
+          <span>Welcome, {user.name}</span>
+          <span className="chip">{user.role}</span>
+          <button className="btn btn--ghost" onClick={handleLogout}>Logout</button>
+        </div>
+      </header>
 
-export default App
+      <main>
+        {user.role === 'student' ? <StudentDashboard token={token} /> : <TeacherDashboard token={token} />}
+      </main>
+    </div>
+  );
+}
