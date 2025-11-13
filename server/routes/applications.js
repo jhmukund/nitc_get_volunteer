@@ -1,4 +1,3 @@
-
 // server/routes/applications.js
 const express = require('express');
 const Application = require('../models/Application');
