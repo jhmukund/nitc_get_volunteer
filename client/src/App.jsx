@@ -16,11 +16,12 @@ export default function App() {
 
   return (
     <div className="container">
-      <header className="header">
+      <header className="header hoverable">
         <h1>Volunteer Management</h1>
         <div className="header-right">
-          <span>Welcome, {user.name} ({user.role})</span>
-          <button className="btn" onClick={handleLogout}>Logout</button>
+          <span>Welcome, {user.name}</span>
+          <span className="chip">{user.role}</span>
+          <button className="btn btn--ghost" onClick={handleLogout}>Logout</button>
         </div>
       </header>
 
