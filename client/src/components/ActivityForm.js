@@ -21,8 +21,10 @@ export default function ActivityForm({ onCreate }) {
   }
 
   return (
-    <div className="card">
-      <h3>Create Activity</h3>
+    <div className="card hoverable">
+      <div className="space-between" style={{marginBottom:8}}>
+        <h3 style={{margin:0}}>Create Activity</h3>
+      </div>
       <form onSubmit={submit}>
         <input placeholder="Title" value={form.title} onChange={e=>update('title', e.target.value)} required />
         <textarea placeholder="Description" rows={3} value={form.description} onChange={e=>update('description', e.target.value)} />
@@ -32,8 +34,12 @@ export default function ActivityForm({ onCreate }) {
         </div>
         <input placeholder="Venue" value={form.venue} onChange={e=>update('venue', e.target.value)} />
         <input placeholder="Required skills (comma separated)" value={form.requiredSkills} onChange={e=>update('requiredSkills', e.target.value)} />
-        <input placeholder="Seats (optional)" type="number" value={form.seats} onChange={e=>update('seats', e.target.value)} />
-        <button className="btn" type="submit">Create</button>
+        <div className="form-row">
+          <input placeholder="Seats (optional)" type="number" value={form.seats} onChange={e=>update('seats', e.target.value)} />
+          <div style={{flex:'0 0 auto'}}>
+            <button className="btn" type="submit">Create</button>
+          </div>
+        </div>
       </form>
     </div>
   );
