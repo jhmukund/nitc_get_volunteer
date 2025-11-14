@@ -12,8 +12,26 @@ router.use(attachUser);
 router.get('/', async (req, res) => {
   try {
     const { active } = req.query;
-    const filter = active === 'true' ? { isActive: true } : {};
+    const filter = {};
+    if (req.user && req.user.role === 'teacher') {
+      filter.organizer = req.user._id;
+    }
+    if (active === 'true') {
+      filter.isActive = true;
+    }
     const activities = await Activity.find(filter).populate('organizer', 'name email');
+    res.json(activities);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Teacher dashboard: only their activities
+router.get('/mine', ensureTeacher, async (req, res) => {
+  try {
+    const activities = await Activity.find({ organizer: req.user._id })
+      .populate('organizer', 'name email');
     res.json(activities);
   } catch (err) {
     console.error(err);
@@ -44,6 +62,9 @@ router.post('/:id/extend-deadline', ensureTeacher, async (req, res) => {
     if (isNaN(nd)) return res.status(400).json({ message: 'Invalid date' });
     const activity = await Activity.findById(req.params.id);
     if (!activity) return res.status(404).json({ message: 'Activity not found' });
+    if (activity.organizer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Only the organizer can modify this activity' });
+    }
     activity.deadline = nd;
     activity.isActive = nd > new Date();
     activity.removedAt = activity.isActive ? null : new Date();
@@ -60,7 +81,9 @@ router.delete('/:id', ensureTeacher, async (req, res) => {
   try {
     const activity = await Activity.findById(req.params.id);
     if (!activity) return res.status(404).json({ message: 'Activity not found' });
-    // optional: restrict to organizer only. Here any teacher can delete.
+    if (activity.organizer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Only the organizer can delete this activity' });
+    }
     await Application.deleteMany({ activity: activity._id });
     // remove notifications related to this activity: optional
     await Notification.deleteMany({ message: new RegExp(activity._id.toString()) }).catch(()=>{});
