@@ -35,7 +35,12 @@ router.post('/:activityId/apply', requireAuth, async (req, res) => {
 // Teacher lists applications
 router.get('/:activityId', ensureTeacher, async (req, res) => {
   try {
-    const applications = await Application.find({ activity: req.params.activityId }).populate('student', 'name email');
+    const activity = await Activity.findById(req.params.activityId);
+    if (!activity) return res.status(404).json({ message: 'Activity not found' });
+    if (activity.organizer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized for this activity' });
+    }
+    const applications = await Application.find({ activity: activity._id }).populate('student', 'name email');
     res.json(applications);
   } catch (err) {
     console.error(err);
@@ -47,8 +52,15 @@ router.get('/:activityId', ensureTeacher, async (req, res) => {
 router.post('/:applicationId/status', ensureTeacher, async (req, res) => {
   try {
     const { status } = req.body;
+    const allowedStatuses = ['accepted', 'rejected'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Status must be accepted or rejected' });
+    }
     const app = await Application.findById(req.params.applicationId).populate('activity');
     if (!app) return res.status(404).json({ message: 'Application not found' });
+    if (!app.activity || app.activity.organizer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized for this application' });
+    }
     app.status = status;
     await app.save();
     // Notify student
